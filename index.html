@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<!-- How to run this file in local machine use terminal and type "python3 -m http.server 8000" and then open the browser and go to "http://localhost:8000/SPD_JGK_ALL_Dasboard.html" -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPD-JGK-ALL Viewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem("spd-jgk-theme");
+                var theme = (saved === "dark" || saved === "light")
+                    ? saved
+                    : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+                document.documentElement.setAttribute("data-theme", theme);
+            } catch (e) {
+                document.documentElement.setAttribute("data-theme", "light");
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --font: "IBM Plex Sans", "Segoe UI", sans-serif;
+            --accent: #0f9ec7;
+            --accent-hover: #0b86aa;
+            --accent-soft: rgba(15, 158, 199, 0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+            --transition: 160ms ease;
+        }
+
+        html[data-theme="light"] {
+            --bg: #eef2f6;
+            --bg-elevated: #f7f9fc;
+            --surface: #ffffff;
+            --surface-muted: #f4f7fa;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-soft: #94a3b8;
+            --thead: #f1f5f9;
+            --row-hover: #f8fbff;
+            --row-alt: #fcfdff;
+            --control-bg: #ffffff;
+            --control-border: #d0d7e2;
+            --success: #15803d;
+            --error: #b91c1c;
+            --status-pickup-bg: #eff6ff;
+            --status-pickup-text: #1d4ed8;
+            --status-progress-bg: #fff7ed;
+            --status-progress-text: #c2410c;
+            --status-mitigated-bg: #ecfdf5;
+            --status-mitigated-text: #047857;
+            --toggle-bg: #e2e8f0;
+        }
+
+        html[data-theme="dark"] {
+            --bg: #0b1220;
+            --bg-elevated: #111827;
+            --surface: #151d2e;
+            --surface-muted: #1a2438;
+            --border: #273349;
+            --border-strong: #334155;
+            --text: #e8eef7;
+            --text-muted: #9aa8bc;
+            --text-soft: #6b7c93;
+            --thead: #1c273a;
+            --row-hover: #1c2940;
+            --row-alt: #172033;
+            --control-bg: #111827;
+            --control-border: #334155;
+            --success: #4ade80;
+            --error: #f87171;
+            --status-pickup-bg: rgba(59, 130, 246, 0.16);
+            --status-pickup-text: #93c5fd;
+            --status-progress-bg: rgba(249, 115, 22, 0.16);
+            --status-progress-text: #fdba74;
+            --status-mitigated-bg: rgba(16, 185, 129, 0.16);
+            --status-mitigated-text: #6ee7b7;
+            --toggle-bg: #1e293b;
+            --accent: #15bbed;
+            --accent-hover: #4dceff;
+            --accent-soft: rgba(21, 187, 237, 0.14);
+            --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.28);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            /* padding: 28px 20px 40px; */
+            font-family: var(--font);
+            background:
+                radial-gradient(1200px 500px at 10% -10%, var(--accent-soft), transparent 55%),
+                var(--bg);
+            color: var(--text);
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased
+        }
+
+        .container {
+            /* max-width: 1280px;
+            margin: auto; */
+            background: var(--surface);
+            padding: 28px 28px 32px;
+            /* border-radius: 16px; */
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow)
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 22px
+        }
+
+        .page-header-text {
+            min-width: 0
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text)
+        }
+
+        .description {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 14px
+        }
+
+        .theme-toggle {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--toggle-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition)
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--border-strong);
+            background: var(--surface-muted)
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.98)
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 14px 16px;
+            background: var(--surface-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius)
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .control-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            white-space: nowrap
+        }
+
+        select,
+        #searchInput {
+            padding: 9px 12px;
+            border: 1px solid var(--control-border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--control-bg);
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition)
+        }
+
+        select:hover,
+        #searchInput:hover {
+            border-color: var(--border-strong)
+        }
+
+        select:focus,
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft)
+        }
+
+        #searchInput {
+            width: 280px
+        }
+
+        .message {
+            margin-top: 14px;
+            color: var(--text-muted);
+            font-size: 14px
+        }
+
+        .success {
+            color: var(--success)
+        }
+
+        .error {
+            color: var(--error)
+        }
+
+        .table-section,
+        .weekly-section {
+            margin-top: 22px
+        }
+
+        .panel {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03)
+        }
+
+        html[data-theme="dark"] .panel {
+            background: var(--surface-muted)
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 12px
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .table-info {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 13px
+        }
+
+        .table-wrapper {
+            max-height: 560px;
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface)
+        }
+
+        table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: separate;
+            border-spacing: 0
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 2
+        }
+
+        th {
+            background: var(--thead);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted)
+        }
+
+        th,
+        td {
+            padding: 11px 14px;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            white-space: nowrap;
+            font-size: 14px
+        }
+
+        th:last-child,
+        td:last-child {
+            border-right: none
+        }
+
+        tbody tr {
+            transition: background var(--transition)
+        }
+
+        tbody tr:nth-child(even) {
+            background: var(--row-alt)
+        }
+
+        tbody tr:hover {
+            background: var(--row-hover)
+        }
+
+        td a,
+        .spd-list a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+            transition: color var(--transition), border-color var(--transition), opacity var(--transition)
+        }
+
+        td a:hover,
+        .spd-list a:hover {
+            color: var(--accent-hover);
+            border-bottom-color: currentColor
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .weekly-section {
+            margin-top: 28px;
+            padding-top: 8px
+        }
+
+        .weekly-section > h2 {
+            margin: 0 0 6px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.01em
+        }
+
+        .weekly-section .section-note {
+            color: var(--text-muted);
+            margin: 0 0 18px;
+            font-size: 13px;
+            line-height: 1.55
+        }
+
+        .weekly-section .section-note i {
+            font-style: italic
+        }
+
+        .week-block {
+            margin-bottom: 16px;
+            padding: 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+            transition: border-color var(--transition), box-shadow var(--transition)
+        }
+
+        html[data-theme="dark"] .week-block {
+            background: var(--surface-muted)
+        }
+
+        .week-block:hover {
+            border-color: var(--border-strong)
+        }
+
+        .week-block h3 {
+            margin: 0 0 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: -0.01em
+        }
+
+        .week-block .table-wrapper {
+            max-height: none
+        }
+
+        .week-block table {
+            min-width: 520px;
+            table-layout: fixed;
+            width: 100%
+        }
+
+        .week-block th:nth-child(1),
+        .week-block td:nth-child(1) {
+            width: 20%
+        }
+
+        .week-block th:nth-child(2),
+        .week-block td:nth-child(2) {
+            width: 10%;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600
+        }
+
+        .week-block th:nth-child(3),
+        .week-block td:nth-child(3) {
+            width: 70%
+        }
+
+        .week-block td:nth-child(1),
+        .week-block td:nth-child(3) {
+            white-space: normal;
+            overflow-wrap: anywhere
+        }
+
+        .week-block tbody tr:nth-child(1) td:first-child,
+        .week-block tbody tr:nth-child(2) td:first-child,
+        .week-block tbody tr:nth-child(3) td:first-child {
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.02em
+        }
+
+        .week-block tbody tr:nth-child(1) td:first-child {
+            color: var(--status-pickup-text)
+        }
+
+        .week-block tbody tr:nth-child(2) td:first-child {
+            color: var(--status-progress-text)
+        }
+
+        .week-block tbody tr:nth-child(3) td:first-child {
+            color: var(--status-mitigated-text)
+        }
+
+        .week-block tbody tr:nth-child(1) td:first-child::before,
+        .week-block tbody tr:nth-child(2) td:first-child::before,
+        .week-block tbody tr:nth-child(3) td:first-child::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle
+        }
+
+        .week-block tbody tr:nth-child(1) td:first-child::before {
+            background: var(--status-pickup-text)
+        }
+
+        .week-block tbody tr:nth-child(2) td:first-child::before {
+            background: var(--status-progress-text)
+        }
+
+        .week-block tbody tr:nth-child(3) td:first-child::before {
+            background: var(--status-mitigated-text)
+        }
+
+        .spd-list {
+            white-space: normal;
+            word-break: break-word;
+            color: var(--text-muted)
+        }
+
+        .spd-empty {
+            color: var(--text-soft)
+        }
+
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding: 12px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm)
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .pagination-controls button {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--control-border);
+            border-radius: var(--radius-sm);
+            background: var(--control-bg);
+            color: var(--text);
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            transition: background var(--transition), border-color var(--transition), color var(--transition), opacity var(--transition)
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            color: var(--accent-hover)
+        }
+
+        .pagination-controls button:disabled {
+            opacity: .38;
+            cursor: not-allowed
+        }
+
+        #pageInfo {
+            min-width: 118px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums
+        }
+
+        .totals-section {
+            margin-top: 22px
+        }
+
+        .totals-section h2 {
+            margin: 0 0 12px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.01em
+        }
+
+        .totals-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 14px;
+            padding: 14px 18px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius)
+        }
+
+        html[data-theme="dark"] .totals-bar {
+            background: var(--surface-muted)
+        }
+
+        .total-item {
+            font-size: 14px;
+            color: var(--text-muted)
+        }
+
+        .total-item strong {
+            font-size: 16px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--text)
+        }
+
+        .total-item.total strong {
+            color: var(--text)
+        }
+
+        .total-item.picked-up strong {
+            color: var(--status-pickup-text)
+        }
+
+        .total-item.mitigated strong {
+            color: var(--status-mitigated-text)
+        }
+
+        .total-item.in-progress strong {
+            color: var(--status-progress-text)
+        }
+
+        .total-divider {
+            color: var(--text-soft);
+            font-size: 14px;
+            user-select: none
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 14px
+            }
+
+            .container {
+                padding: 18px
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: stretch
+            }
+
+            .theme-toggle {
+                align-self: flex-end
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch
+            }
+
+            #searchInput {
+                width: 100%
+            }
+
+            .pagination-bar {
+                flex-direction: column;
+                align-items: stretch
+            }
+
+            .pagination-controls {
+                justify-content: center
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div class="page-header-text">
+                <h1>SPD-JGK-ALL</h1>
+                <p class="description">Data loaded automatically from the online Google Sheet</p>
+            </div>
+            <button type="button" id="themeToggle" class="theme-toggle" aria-label="Toggle color theme">
+                <span class="theme-label">Dark</span>
+            </button>
+        </header>
+        <div id="controls" class="controls hidden">
+            <div class="control-group"><label for="sheetSelect">Sheet:</label><select id="sheetSelect"></select></div>
+            <div class="control-group"><label for="searchInput">Search:</label><input type="text" id="searchInput"
+                    placeholder="Search data..."></div>
+        </div>
+        <div id="message" class="message">Loading Google Sheet...</div>
+        <section id="tableSection" class="table-section panel hidden">
+            <div class="panel-heading">
+                <h2 class="panel-title">All records</h2>
+                <div class="table-info"><span id="rowCount"></span></div>
+            </div>
+            <div class="table-wrapper">
+                <table id="excelTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="paginationBar" class="pagination-bar">
+                <div class="control-group">
+                    <label for="rowsPerPage">Rows per page:</label>
+                    <select id="rowsPerPage">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="pagination-controls">
+                    <button type="button" id="prevPage" aria-label="Previous page">←</button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button type="button" id="nextPage" aria-label="Next page">→</button>
+                </div>
+            </div>
+        </section>
+        <section id="totalsSection" class="totals-section hidden">
+            <h2>Overall Status</h2>
+            <div class="totals-bar">
+                <span class="total-item total">Total: <strong id="totalCount">0</strong></span>
+                <span class="total-divider" aria-hidden="true">|</span>
+                <span class="total-item picked-up">Picked-up: <strong id="pickedUpCount">0</strong></span>
+                <span class="total-divider" aria-hidden="true">|</span>
+                <span class="total-item mitigated">Mitigated: <strong id="mitigatedCount">0</strong></span>
+                <span class="total-divider" aria-hidden="true">|</span>
+                <span class="total-item in-progress">In-progress: <strong id="inProgressCount">0</strong></span>
+            </div>
+        </section>
+        <section id="weeklySection" class="weekly-section hidden">
+            <h2>Weekly Status</h2>
+            <p class="section-note"><i>Each week runs Wednesday 6:00 PM IST → following Wednesday 6:00 PM IST.<br />Unresolved SPD IDs carry forward into In-progress until mitigated.</i></p>
+            <div id="weeklyContent"></div>
+        </section>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script>
+        const GOOGLE_SHEET_ID = "1O0fWLJ5Nles3mG1ZivwNWVmvl5Kyv-Hn6D-YTSUR4lE";
+        const SHEET_SOURCE_LABEL = "Google Sheet";
+        const SHEET_XLSX_URL = "https://docs.google.com/spreadsheets/d/" + GOOGLE_SHEET_ID + "/export?format=xlsx";
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/" + GOOGLE_SHEET_ID + "/export?format=csv";
+        const JIRA_BASE_URL = "https://spotdraft.atlassian.net/browse/";
+        const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+        const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+        const MONTH_NAMES = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const MONTH_INDEX = MONTH_NAMES.reduce(function (map, name, index) {
+            map[name.toLowerCase()] = index;
+            return map;
+        }, {});
+
+        const controls = document.getElementById("controls");
+        const sheetSelect = document.getElementById("sheetSelect");
+        const searchInput = document.getElementById("searchInput");
+        const message = document.getElementById("message");
+        const tableSection = document.getElementById("tableSection");
+        const weeklySection = document.getElementById("weeklySection");
+        const weeklyContent = document.getElementById("weeklyContent");
+        const totalsSection = document.getElementById("totalsSection");
+        const totalCount = document.getElementById("totalCount");
+        const pickedUpCount = document.getElementById("pickedUpCount");
+        const mitigatedCount = document.getElementById("mitigatedCount");
+        const inProgressCount = document.getElementById("inProgressCount");
+        const table = document.getElementById("excelTable");
+        const tableHead = table.querySelector("thead");
+        const tableBody = table.querySelector("tbody");
+        const rowCount = document.getElementById("rowCount");
+        const rowsPerPageSelect = document.getElementById("rowsPerPage");
+        const prevPageBtn = document.getElementById("prevPage");
+        const nextPageBtn = document.getElementById("nextPage");
+        const pageInfo = document.getElementById("pageInfo");
+        let workbook = null;
+        let currentData = [];
+        let viewData = [];
+        let currentPage = 1;
+        let rowsPerPage = 10;
+
+        loadWorkbook();
+
+        async function fetchSheetBuffer(url) {
+            const response = await fetch(url, { redirect: "follow", cache: "no-store" });
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status + " while loading " + url);
+            }
+            const buffer = await response.arrayBuffer();
+            if (!buffer || buffer.byteLength < 8) {
+                throw new Error("Empty response from Google Sheets.");
+            }
+            const head = new TextDecoder("utf-8").decode(buffer.slice(0, Math.min(80, buffer.byteLength))).trim().toLowerCase();
+            if (head.indexOf("<!doctype html") === 0 || head.indexOf("<html") === 0) {
+                throw new Error("Google returned a login/HTML page. Share the sheet as Anyone with the link → Viewer.");
+            }
+            return buffer;
+        }
+
+        async function loadWorkbook() {
+            if (typeof XLSX === "undefined") { showError("Excel library could not be loaded. Check your internet connection."); return; }
+            if (location.protocol === "file:") {
+                showError("Host this HTML page online (GitHub Pages / Netlify / similar), then open the https:// URL. Double-clicking a local file cannot load Google Sheets data.");
+                return;
+            }
+            try {
+                let buffer;
+                let usedCsv = false;
+                try {
+                    buffer = await fetchSheetBuffer(SHEET_XLSX_URL);
+                    workbook = XLSX.read(new Uint8Array(buffer), { type: "array", cellDates: true });
+                } catch (xlsxError) {
+                    console.warn("XLSX export failed, trying CSV:", xlsxError);
+                    buffer = await fetchSheetBuffer(SHEET_CSV_URL);
+                    usedCsv = true;
+                    const csvText = new TextDecoder("utf-8").decode(buffer);
+                    workbook = XLSX.read(csvText, { type: "string", raw: false });
+                }
+                if (!workbook.SheetNames.length) throw new Error("No sheets found in the Google Sheet export.");
+                populateSheets();
+                displaySheet(workbook.SheetNames[0]);
+                if (workbook.SheetNames.length > 1) sheetSelect.parentElement.classList.remove("hidden");
+                else sheetSelect.parentElement.classList.add("hidden");
+                controls.classList.remove("hidden");
+                tableSection.classList.remove("hidden");
+                message.textContent = "Loaded " + SHEET_SOURCE_LABEL + (usedCsv ? " (CSV)" : "");
+                message.className = "message success";
+            } catch (error) {
+                console.error(error);
+                showError("Unable to load Google Sheet: " + error.message + " Make sure the sheet is shared as Anyone with the link → Viewer, and open this dashboard from an https:// host.");
+            }
+        }
+
+        function populateSheets() {
+            sheetSelect.innerHTML = "";
+            workbook.SheetNames.forEach(function (name) {
+                const option = document.createElement("option");
+                option.value = name; option.textContent = name;
+                sheetSelect.appendChild(option);
+            });
+        }
+        sheetSelect.addEventListener("change", () => displaySheet(sheetSelect.value));
+
+        function displaySheet(sheetName) {
+            const worksheet = workbook.Sheets[sheetName];
+            if (!worksheet) { showError("Sheet not found."); return; }
+            currentData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+            searchInput.value = "";
+            setViewData(currentData, true);
+            renderWeeklyStatus(currentData);
+        }
+
+        function setViewData(data, resetPage) {
+            viewData = data && data.length ? data : [];
+            if (resetPage) currentPage = 1;
+            renderTablePage();
+        }
+
+        function getTotalPages(totalRows) {
+            if (totalRows <= 0) return 1;
+            return Math.max(1, Math.ceil(totalRows / rowsPerPage));
+        }
+
+        function updatePaginationControls(totalRows) {
+            const totalPages = getTotalPages(totalRows);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            pageInfo.textContent = "Page " + currentPage + " of " + totalPages;
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages;
+        }
+
+        function renderTablePage() {
+            tableHead.innerHTML = "";
+            tableBody.innerHTML = "";
+            if (!viewData.length) {
+                rowCount.textContent = "0 rows";
+                updatePaginationControls(0);
+                return;
+            }
+
+            const headers = viewData[0];
+            const rows = viewData.slice(1);
+            const totalRows = rows.length;
+            const totalPages = getTotalPages(totalRows);
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const headerRow = document.createElement("tr");
+            headers.forEach(function (header) {
+                const th = document.createElement("th");
+                th.textContent = header || "Column";
+                headerRow.appendChild(th);
+            });
+            tableHead.appendChild(headerRow);
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const pageRows = rows.slice(start, start + rowsPerPage);
+            pageRows.forEach(function (row) {
+                const tr = document.createElement("tr");
+                headers.forEach(function (_, index) {
+                    const td = document.createElement("td");
+                    const value = row[index] !== undefined ? String(row[index]) : "";
+                    if (/^https?:\/\//i.test(value)) {
+                        const link = document.createElement("a");
+                        link.href = value;
+                        link.target = "_blank";
+                        link.rel = "noopener";
+                        link.textContent = value;
+                        td.appendChild(link);
+                    } else {
+                        td.textContent = value;
+                    }
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+
+            const shownStart = totalRows === 0 ? 0 : start + 1;
+            const shownEnd = start + pageRows.length;
+            rowCount.textContent = totalRows === 0
+                ? "0 rows"
+                : ("Showing " + shownStart + "–" + shownEnd + " of " + totalRows + " row(s)");
+            updatePaginationControls(totalRows);
+        }
+
+        rowsPerPageSelect.addEventListener("change", function () {
+            rowsPerPage = parseInt(rowsPerPageSelect.value, 10) || 10;
+            currentPage = 1;
+            renderTablePage();
+        });
+
+        prevPageBtn.addEventListener("click", function () {
+            if (currentPage <= 1) return;
+            currentPage -= 1;
+            renderTablePage();
+        });
+
+        nextPageBtn.addEventListener("click", function () {
+            const totalRows = Math.max(0, viewData.length - 1);
+            if (currentPage >= getTotalPages(totalRows)) return;
+            currentPage += 1;
+            renderTablePage();
+        });
+
+        function parseExcelDateIST(value) {
+            if (value === null || value === undefined || value === "") return null;
+            if (value instanceof Date && !isNaN(value.getTime())) {
+                return value.getTime();
+            }
+            if (typeof value === "number" && isFinite(value)) {
+                // Excel/Sheets serial day number → JS ms (UTC midnight baseline + IST wall-clock intent).
+                const utc = Math.round((value - 25569) * 86400 * 1000);
+                return utc - IST_OFFSET_MS;
+            }
+
+            const text = String(value).trim();
+            if (!text) return null;
+
+            // August 6, 2026, 7:15 PM
+            let match = text.match(/^([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4}),\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+            if (match) {
+                const month = MONTH_INDEX[match[1].toLowerCase()];
+                if (month === undefined) return null;
+                let hour = parseInt(match[4], 10);
+                const minute = parseInt(match[5], 10);
+                const second = match[6] ? parseInt(match[6], 10) : 0;
+                const ampm = match[7].toUpperCase();
+                if (ampm === "PM" && hour !== 12) hour += 12;
+                if (ampm === "AM" && hour === 12) hour = 0;
+                return Date.UTC(
+                    parseInt(match[3], 10),
+                    month,
+                    parseInt(match[2], 10),
+                    hour,
+                    minute,
+                    second,
+                    0
+                ) - IST_OFFSET_MS;
+            }
+
+            // 8/6/2026 19:15[:ss] or 08-06-2026 7:15 PM
+            match = text.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i);
+            if (match) {
+                let hour = match[4] ? parseInt(match[4], 10) : 0;
+                const minute = match[5] ? parseInt(match[5], 10) : 0;
+                const second = match[6] ? parseInt(match[6], 10) : 0;
+                const ampm = match[7] ? match[7].toUpperCase() : "";
+                if (ampm === "PM" && hour !== 12) hour += 12;
+                if (ampm === "AM" && hour === 12) hour = 0;
+                return Date.UTC(
+                    parseInt(match[3], 10),
+                    parseInt(match[1], 10) - 1,
+                    parseInt(match[2], 10),
+                    hour,
+                    minute,
+                    second,
+                    0
+                ) - IST_OFFSET_MS;
+            }
+
+            // 2026-08-06 19:15:00 / ISO-like
+            match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+            if (match) {
+                return Date.UTC(
+                    parseInt(match[1], 10),
+                    parseInt(match[2], 10) - 1,
+                    parseInt(match[3], 10),
+                    match[4] ? parseInt(match[4], 10) : 0,
+                    match[5] ? parseInt(match[5], 10) : 0,
+                    match[6] ? parseInt(match[6], 10) : 0,
+                    0
+                ) - IST_OFFSET_MS;
+            }
+
+            const parsed = Date.parse(text);
+            if (!isNaN(parsed)) return parsed;
+            return null;
+        }
+
+        function getWeekStartContaining(timestamp) {
+            const ist = new Date(timestamp + IST_OFFSET_MS);
+            const day = ist.getUTCDay();
+            const minutesOfDay = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+            let daysSinceWednesday = (day - 3 + 7) % 7;
+            if (daysSinceWednesday === 0 && minutesOfDay < 18 * 60) daysSinceWednesday = 7;
+            const startIstUtc = Date.UTC(
+                ist.getUTCFullYear(),
+                ist.getUTCMonth(),
+                ist.getUTCDate() - daysSinceWednesday,
+                18, 0, 0, 0
+            );
+            return startIstUtc - IST_OFFSET_MS;
+        }
+
+        function formatIstDateTime(timestamp) {
+            const ist = new Date(timestamp + IST_OFFSET_MS);
+            let hour = ist.getUTCHours();
+            const minute = String(ist.getUTCMinutes()).padStart(2, "0");
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12;
+            if (hour === 0) hour = 12;
+            return MONTH_NAMES[ist.getUTCMonth()] + " " + ist.getUTCDate() + ", " + ist.getUTCFullYear()
+                + ", " + hour + ":" + minute + " " + ampm + " IST";
+        }
+
+        function isInWeek(timestamp, weekStart, weekEnd) {
+            return timestamp !== null && timestamp >= weekStart && timestamp < weekEnd;
+        }
+
+        function jiraUrlForSpd(spdId) {
+            return JIRA_BASE_URL + encodeURIComponent(String(spdId).trim());
+        }
+
+        function getColumnIndexes(headers) {
+            const normalized = headers.map(function (header) {
+                return String(header || "").trim().toLowerCase();
+            });
+            return {
+                id: normalized.indexOf("spd-id"),
+                pickedUp: normalized.indexOf("picked-up (ist)"),
+                mitigated: normalized.indexOf("mitigated (ist)")
+            };
+        }
+
+        function buildWeeklyPeriods(records, now) {
+            const timestamps = [];
+            records.forEach(function (record) {
+                if (record.pickedUpMs !== null) timestamps.push(record.pickedUpMs);
+                if (record.mitigatedMs !== null) timestamps.push(record.mitigatedMs);
+                if (record.mitigatedMs === null) timestamps.push(now);
+            });
+            if (!timestamps.length) return [];
+
+            let weekStart = getWeekStartContaining(Math.min.apply(null, timestamps));
+            const lastWeekStart = getWeekStartContaining(Math.max.apply(null, timestamps));
+            const weeks = [];
+            while (weekStart <= lastWeekStart) {
+                weeks.push({ start: weekStart, end: weekStart + WEEK_MS });
+                weekStart += WEEK_MS;
+            }
+            return weeks;
+        }
+
+        function classifyWeek(records, week, now) {
+            const pickedUp = [];
+            const inProgress = [];
+            const mitigated = [];
+            const seenPickedUp = new Set();
+            const seenInProgress = new Set();
+            const seenMitigated = new Set();
+
+            records.forEach(function (record) {
+                if (isInWeek(record.pickedUpMs, week.start, week.end) && !seenPickedUp.has(record.id)) {
+                    seenPickedUp.add(record.id);
+                    pickedUp.push(record.id);
+                }
+
+                if (isInWeek(record.mitigatedMs, week.start, week.end) && !seenMitigated.has(record.id)) {
+                    seenMitigated.add(record.id);
+                    mitigated.push(record.id);
+                }
+
+                // In-progress: picked up on or before this week's end, and not yet mitigated as of week end.
+                // Empty Mitigated date = still open (Date.now() keeps these active through the current week).
+                // Unresolved items from earlier weeks carry forward automatically via this rule.
+                const pickedByWeekEnd = record.pickedUpMs !== null && record.pickedUpMs < week.end;
+                const stillOpenAtWeekEnd = record.mitigatedMs === null
+                    ? now >= week.start
+                    : record.mitigatedMs >= week.end;
+                if (pickedByWeekEnd && stillOpenAtWeekEnd && !seenInProgress.has(record.id)) {
+                    seenInProgress.add(record.id);
+                    inProgress.push(record.id);
+                }
+            });
+
+            return [
+                { status: "Picked-up", ids: pickedUp },
+                { status: "In-progress", ids: inProgress },
+                { status: "Mitigated", ids: mitigated }
+            ];
+        }
+
+        function computeOverallTotals(records) {
+            const pickedUp = records.filter(function (r) { return r.pickedUpMs !== null; });
+            const mitigated = records.filter(function (r) { return r.mitigatedMs !== null; });
+            const inProgress = records.filter(function (r) { return r.mitigatedMs === null; });
+            return {
+                total: records.length,
+                pickedUp: pickedUp.length,
+                mitigated: mitigated.length,
+                inProgress: inProgress.length
+            };
+        }
+
+        function renderOverallTotals(records) {
+            const totals = computeOverallTotals(records);
+            totalCount.textContent = String(totals.total);
+            pickedUpCount.textContent = String(totals.pickedUp);
+            mitigatedCount.textContent = String(totals.mitigated);
+            inProgressCount.textContent = String(totals.inProgress);
+            totalsSection.classList.remove("hidden");
+        }
+
+        function appendSpdList(cell, ids) {
+            cell.className = "spd-list";
+            if (!ids.length) {
+                const empty = document.createElement("span");
+                empty.className = "spd-empty";
+                empty.textContent = "—";
+                cell.appendChild(empty);
+                return;
+            }
+            cell.appendChild(document.createTextNode("["));
+            ids.forEach(function (id, index) {
+                if (index > 0) cell.appendChild(document.createTextNode(", "));
+                const link = document.createElement("a");
+                link.href = jiraUrlForSpd(id);
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = id;
+                cell.appendChild(link);
+            });
+            cell.appendChild(document.createTextNode("]"));
+        }
+
+        function renderWeeklyStatus(data) {
+            weeklyContent.innerHTML = "";
+            if (!data || data.length < 2) {
+                weeklySection.classList.add("hidden");
+                totalsSection.classList.add("hidden");
+                return;
+            }
+
+            const headers = data[0];
+            const cols = getColumnIndexes(headers);
+            if (cols.id < 0 || cols.pickedUp < 0 || cols.mitigated < 0) {
+                weeklySection.classList.add("hidden");
+                totalsSection.classList.add("hidden");
+                return;
+            }
+
+            const now = Date.now();
+            const records = data.slice(1).map(function (row) {
+                const id = String(row[cols.id] || "").trim();
+                if (!id) return null;
+                const mitigatedText = String(row[cols.mitigated] || "").trim();
+                return {
+                    id: id,
+                    pickedUpMs: parseExcelDateIST(row[cols.pickedUp]),
+                    mitigatedMs: mitigatedText ? parseExcelDateIST(mitigatedText) : null
+                };
+            }).filter(Boolean);
+
+            renderOverallTotals(records);
+
+            const weeks = buildWeeklyPeriods(records, now);
+            if (!weeks.length) {
+                weeklySection.classList.add("hidden");
+                return;
+            }
+
+            weeks.forEach(function (week) {
+                const block = document.createElement("div");
+                block.className = "week-block";
+
+                const title = document.createElement("h3");
+                title.textContent = formatIstDateTime(week.start) + " → " + formatIstDateTime(week.end);
+                block.appendChild(title);
+
+                const wrapper = document.createElement("div");
+                wrapper.className = "table-wrapper";
+                const weekTable = document.createElement("table");
+                const thead = document.createElement("thead");
+                const headRow = document.createElement("tr");
+                ["Status", "Count", "List-SPD-ID"].forEach(function (label) {
+                    const th = document.createElement("th");
+                    th.textContent = label;
+                    headRow.appendChild(th);
+                });
+                thead.appendChild(headRow);
+                weekTable.appendChild(thead);
+
+                const tbody = document.createElement("tbody");
+                classifyWeek(records, week, now).forEach(function (row) {
+                    const tr = document.createElement("tr");
+                    const statusTd = document.createElement("td");
+                    statusTd.textContent = row.status;
+                    const countTd = document.createElement("td");
+                    countTd.textContent = String(row.ids.length);
+                    const listTd = document.createElement("td");
+                    appendSpdList(listTd, row.ids);
+                    tr.appendChild(statusTd);
+                    tr.appendChild(countTd);
+                    tr.appendChild(listTd);
+                    tbody.appendChild(tr);
+                });
+                weekTable.appendChild(tbody);
+                wrapper.appendChild(weekTable);
+                block.appendChild(wrapper);
+                weeklyContent.appendChild(block);
+            });
+
+            weeklySection.classList.remove("hidden");
+        }
+
+        searchInput.addEventListener("input", function () {
+            const value = searchInput.value.trim().toLowerCase();
+            if (!currentData.length) return;
+            if (!value) {
+                setViewData(currentData, true);
+                return;
+            }
+            const headers = currentData[0];
+            const filtered = currentData.slice(1).filter(function (row) {
+                return row.some(function (cell) {
+                    return String(cell).toLowerCase().includes(value);
+                });
+            });
+            setViewData([headers].concat(filtered), true);
+        });
+
+        function showError(text) {
+            message.textContent = text;
+            message.className = "message error";
+            controls.classList.add("hidden");
+            tableSection.classList.add("hidden");
+            totalsSection.classList.add("hidden");
+            weeklySection.classList.add("hidden");
+        }
+    </script>
+    <script>
+        (function () {
+            var toggle = document.getElementById("themeToggle");
+            if (!toggle) return;
+            var label = toggle.querySelector(".theme-label");
+
+            function syncToggle(theme) {
+                var isDark = theme === "dark";
+                if (label) label.textContent = isDark ? "Light" : "Dark";
+                toggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+            }
+
+            syncToggle(document.documentElement.getAttribute("data-theme") || "light");
+
+            toggle.addEventListener("click", function () {
+                var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+                document.documentElement.setAttribute("data-theme", next);
+                try { localStorage.setItem("spd-jgk-theme", next); } catch (e) { }
+                syncToggle(next);
+            });
+        })();
+    </script>
+</body>
+
+</html>
