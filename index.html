@@ -807,10 +807,28 @@
         }
         sheetSelect.addEventListener("change", () => displaySheet(sheetSelect.value));
 
+        function normalizeSheetData(data) {
+            if (!data || !data.length) return [];
+            const headers = data[0];
+            const cols = getColumnIndexes(headers);
+            const body = data.slice(1).filter(function (row) {
+                if (!row || !row.length) return false;
+                if (cols.id >= 0) {
+                    return String(row[cols.id] || "").trim() !== "";
+                }
+                return row.some(function (cell) {
+                    return String(cell || "").trim() !== "";
+                });
+            });
+            return [headers].concat(body);
+        }
+
         function displaySheet(sheetName) {
             const worksheet = workbook.Sheets[sheetName];
             if (!worksheet) { showError("Sheet not found."); return; }
-            currentData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+            currentData = normalizeSheetData(
+                XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false })
+            );
             searchInput.value = "";
             setViewData(currentData, true);
             renderWeeklyStatus(currentData);
