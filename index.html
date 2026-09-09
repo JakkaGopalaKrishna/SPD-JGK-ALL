@@ -809,9 +809,16 @@
 
         function normalizeSheetData(data) {
             if (!data || !data.length) return [];
-            const headers = data[0];
+            // Drop Timestamp (first column); use remaining columns for display + status logic.
+            const withoutFirst = data.map(function (row) {
+                return Array.isArray(row) ? row.slice(1) : row;
+            }).filter(function (row) {
+                return Array.isArray(row) && row.length > 0;
+            });
+            if (!withoutFirst.length) return [];
+            const headers = withoutFirst[0];
             const cols = getColumnIndexes(headers);
-            const body = data.slice(1).filter(function (row) {
+            const body = withoutFirst.slice(1).filter(function (row) {
                 if (!row || !row.length) return false;
                 if (cols.id >= 0) {
                     return String(row[cols.id] || "").trim() !== "";
@@ -940,15 +947,15 @@
             const text = String(value).trim();
             if (!text) return null;
 
-            // August 6, 2026, 7:15 PM
-            let match = text.match(/^([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4}),\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+            // August 6, 2026, 7:15 PM  OR  August 6, 2026, 19:15
+            let match = text.match(/^([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4}),\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i);
             if (match) {
                 const month = MONTH_INDEX[match[1].toLowerCase()];
                 if (month === undefined) return null;
                 let hour = parseInt(match[4], 10);
                 const minute = parseInt(match[5], 10);
                 const second = match[6] ? parseInt(match[6], 10) : 0;
-                const ampm = match[7].toUpperCase();
+                const ampm = match[7] ? match[7].toUpperCase() : "";
                 if (ampm === "PM" && hour !== 12) hour += 12;
                 if (ampm === "AM" && hour === 12) hour = 0;
                 return Date.UTC(
@@ -1039,10 +1046,17 @@
             const normalized = headers.map(function (header) {
                 return String(header || "").trim().toLowerCase();
             });
+            function findCol(names) {
+                for (let i = 0; i < names.length; i++) {
+                    const idx = normalized.indexOf(names[i]);
+                    if (idx >= 0) return idx;
+                }
+                return -1;
+            }
             return {
-                id: normalized.indexOf("spd-id"),
-                pickedUp: normalized.indexOf("picked-up (ist)"),
-                mitigated: normalized.indexOf("mitigated (ist)")
+                id: findCol(["spd-id"]),
+                pickedUp: findCol(["picked-up (ist)", "picked up (ist)"]),
+                mitigated: findCol(["mitigated (ist)", "mitigate (ist)", "mitigated", "mitigate"])
             };
         }
 
