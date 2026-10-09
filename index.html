@@ -836,6 +836,8 @@
             currentData = normalizeSheetData(
                 XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false })
             );
+            // Sort the main table by SPD-ID in ascending numeric order.
+            currentData = sortSheetRowsBySpdId(currentData);
             searchInput.value = "";
             setViewData(currentData, true);
             renderWeeklyStatus(currentData);
@@ -1042,6 +1044,35 @@
             return JIRA_BASE_URL + encodeURIComponent(String(spdId).trim());
         }
 
+        function compareSpdIds(a, b) {
+            const left = String(a || "").trim();
+            const right = String(b || "").trim();
+            const leftMatch = left.match(/\d+/);
+            const rightMatch = right.match(/\d+/);
+
+            if (leftMatch && rightMatch) {
+                const leftNumber = Number(leftMatch[0]);
+                const rightNumber = Number(rightMatch[0]);
+                if (leftNumber !== rightNumber) return leftNumber - rightNumber;
+            } else if (leftMatch) {
+                return -1;
+            } else if (rightMatch) {
+                return 1;
+            }
+
+            return left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" });
+        }
+
+        function sortSheetRowsBySpdId(data) {
+            if (!data || data.length < 2) return data || [];
+            const headers = data[0];
+            const cols = getColumnIndexes(headers);
+            if (cols.id < 0) return data;
+            return [headers].concat(data.slice(1).sort(function (rowA, rowB) {
+                return compareSpdIds(rowA[cols.id], rowB[cols.id]);
+            }));
+        }
+
         function getColumnIndexes(headers) {
             const normalized = headers.map(function (header) {
                 return String(header || "").trim().toLowerCase();
@@ -1141,6 +1172,7 @@
 
         function appendSpdList(cell, ids) {
             cell.className = "spd-list";
+            ids = ids.slice().sort(compareSpdIds);
             if (!ids.length) {
                 const empty = document.createElement("span");
                 empty.className = "spd-empty";
