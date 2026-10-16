@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-<!-- How to run this file in local machine use terminal and type "python3 -m http.server 8000" and then open the browser and go to "http://localhost:8000/SPD_JGK_ALL_Dasboard.html" -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPD-JGK-ALL Viewer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <script>
         (function () {
             try {
@@ -353,7 +354,7 @@
             padding-top: 8px
         }
 
-        .weekly-section > h2 {
+        .weekly-section>h2 {
             margin: 0 0 6px;
             font-size: 20px;
             font-weight: 700;
@@ -597,6 +598,25 @@
             user-select: none
         }
 
+        .site-footer {
+            margin-top: 26px;
+            padding: 18px 12px 6px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .site-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .site-footer a:hover {
+            color: var(--accent-hover);
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 14px
@@ -685,6 +705,22 @@
         <section id="totalsSection" class="totals-section hidden">
             <h2>Overall Status</h2>
             <div class="totals-bar">
+                <span class="total-item total">Form:
+                    <strong>
+                        <a style="color: #0b86aa;" target="_blank"
+                            href="https://docs.google.com/forms/d/e/1FAIpQLSfAVoqtlUHoT48agNVQa_E38f4N07xmE1yRD0jx8GedMPLGyw/viewform">Add
+                            SPD</a>
+                    </strong>
+                </span>
+                <span class="total-item total">Sheet:
+                    <strong>
+                        <a style="color: #0b86aa;" target="_blank"
+                            href="https://docs.google.com/spreadsheets/d/1O0fWLJ5Nles3mG1ZivwNWVmvl5Kyv-Hn6D-YTSUR4lE/edit?usp=drivesdk">See
+                            SPD's</a>
+                    </strong>
+                </span>
+            </div>
+            <div class="totals-bar">
                 <span class="total-item total">Total: <strong id="totalCount">0</strong></span>
                 <span class="total-divider" aria-hidden="true">|</span>
                 <span class="total-item picked-up">Picked-up: <strong id="pickedUpCount">0</strong></span>
@@ -696,10 +732,18 @@
         </section>
         <section id="weeklySection" class="weekly-section hidden">
             <h2>Weekly Status</h2>
-            <p class="section-note"><i>Each week runs Wednesday 6:00 PM IST → following Wednesday 6:00 PM IST.<br />Unresolved SPD IDs carry forward into In-progress until mitigated.</i></p>
+            <p class="section-note"><i>Each week runs Wednesday 6:00 PM IST → following Wednesday 6:00 PM
+                    IST.<br />Unresolved SPD IDs carry forward into In-progress until mitigated.</i></p>
             <div id="weeklyContent"></div>
         </section>
     </div>
+
+    <footer class="site-footer">
+        <span>© 2026 SPD-JGK-ALL · Built for tracking SPD status updates</span>
+        <span> · </span>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfAVoqtlUHoT48agNVQa_E38f4N07xmE1yRD0jx8GedMPLGyw/viewform"
+            target="_blank" rel="noopener noreferrer">Submit SPD</a>
+    </footer>
 
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script>
