@@ -592,6 +592,10 @@
             color: var(--status-progress-text)
         }
 
+        .total-item.transferred strong {
+            color: var(--text-muted)
+        }
+
         .total-divider {
             color: var(--text-soft);
             font-size: 14px;
@@ -727,13 +731,16 @@
                 <span class="total-divider" aria-hidden="true">|</span>
                 <span class="total-item mitigated">Mitigated: <strong id="mitigatedCount">0</strong></span>
                 <span class="total-divider" aria-hidden="true">|</span>
+                <span class="total-divider" aria-hidden="true">|</span>
                 <span class="total-item in-progress">In-progress: <strong id="inProgressCount">0</strong></span>
+                <span class="total-divider" aria-hidden="true">|</span>
+                <span class="total-item transferred">Transferred: <strong id="transferredCount">0</strong></span>
             </div>
         </section>
         <section id="weeklySection" class="weekly-section hidden">
             <h2>Weekly Status</h2>
             <p class="section-note"><i>Each week runs Wednesday 6:00 PM IST → following Wednesday 6:00 PM
-                    IST.<br />Unresolved SPD IDs carry forward into In-progress until mitigated.</i></p>
+                    IST.<br />Unresolved SPD IDs carry forward into In-progress until mitigated or transferred. Transferred SPD IDs remain in the weekly history but are no longer counted as your active workload.</i></p>
             <div id="weeklyContent"></div>
         </section>
     </div>
@@ -775,6 +782,7 @@
         const pickedUpCount = document.getElementById("pickedUpCount");
         const mitigatedCount = document.getElementById("mitigatedCount");
         const inProgressCount = document.getElementById("inProgressCount");
+        const transferredCount = document.getElementById("transferredCount");
         const table = document.getElementById("excelTable");
         const tableHead = table.querySelector("thead");
         const tableBody = table.querySelector("tbody");
@@ -1131,7 +1139,8 @@
             return {
                 id: findCol(["spd-id"]),
                 pickedUp: findCol(["picked-up (ist)", "picked up (ist)"]),
-                mitigated: findCol(["mitigated (ist)", "mitigate (ist)", "mitigated", "mitigate"])
+                mitigated: findCol(["mitigated (ist)", "mitigate (ist)", "mitigated", "mitigate"]),
+                transferred: findCol(["transferdate", "transfer date", "transferredate", "transferred date"])
             };
         }
 
@@ -1140,7 +1149,8 @@
             records.forEach(function (record) {
                 if (record.pickedUpMs !== null) timestamps.push(record.pickedUpMs);
                 if (record.mitigatedMs !== null) timestamps.push(record.mitigatedMs);
-                if (record.mitigatedMs === null) timestamps.push(now);
+                if (record.transferMs !== null) timestamps.push(record.transferMs);
+                if (record.mitigatedMs === null && record.transferMs === null) timestamps.push(now);
             });
             if (!timestamps.length) return [];
 
@@ -1158,28 +1168,31 @@
             const pickedUp = [];
             const inProgress = [];
             const mitigated = [];
+            const transferred = [];
             const seenPickedUp = new Set();
             const seenInProgress = new Set();
             const seenMitigated = new Set();
+            const seenTransferred = new Set();
 
             records.forEach(function (record) {
                 if (isInWeek(record.pickedUpMs, week.start, week.end) && !seenPickedUp.has(record.id)) {
                     seenPickedUp.add(record.id);
                     pickedUp.push(record.id);
                 }
-
                 if (isInWeek(record.mitigatedMs, week.start, week.end) && !seenMitigated.has(record.id)) {
                     seenMitigated.add(record.id);
                     mitigated.push(record.id);
                 }
+                if (isInWeek(record.transferMs, week.start, week.end) && !seenTransferred.has(record.id)) {
+                    seenTransferred.add(record.id);
+                    transferred.push(record.id);
+                }
 
-                // In-progress: picked up on or before this week's end, and not yet mitigated as of week end.
-                // Empty Mitigated date = still open (Date.now() keeps these active through the current week).
-                // Unresolved items from earlier weeks carry forward automatically via this rule.
+                // Transferred or mitigated tickets stop counting as active workload from that date.
                 const pickedByWeekEnd = record.pickedUpMs !== null && record.pickedUpMs < week.end;
-                const stillOpenAtWeekEnd = record.mitigatedMs === null
-                    ? now >= week.start
-                    : record.mitigatedMs >= week.end;
+                const closedByWeekEnd = (record.mitigatedMs !== null && record.mitigatedMs < week.end)
+                    || (record.transferMs !== null && record.transferMs < week.end);
+                const stillOpenAtWeekEnd = !closedByWeekEnd && now >= week.start;
                 if (pickedByWeekEnd && stillOpenAtWeekEnd && !seenInProgress.has(record.id)) {
                     seenInProgress.add(record.id);
                     inProgress.push(record.id);
@@ -1189,19 +1202,24 @@
             return [
                 { status: "Picked-up", ids: pickedUp },
                 { status: "In-progress", ids: inProgress },
-                { status: "Mitigated", ids: mitigated }
+                { status: "Mitigated", ids: mitigated },
+                { status: "Transferred", ids: transferred }
             ];
         }
 
         function computeOverallTotals(records) {
             const pickedUp = records.filter(function (r) { return r.pickedUpMs !== null; });
             const mitigated = records.filter(function (r) { return r.mitigatedMs !== null; });
-            const inProgress = records.filter(function (r) { return r.mitigatedMs === null; });
+            const transferred = records.filter(function (r) { return r.transferMs !== null; });
+            const inProgress = records.filter(function (r) {
+                return r.mitigatedMs === null && r.transferMs === null;
+            });
             return {
                 total: records.length,
                 pickedUp: pickedUp.length,
                 mitigated: mitigated.length,
-                inProgress: inProgress.length
+                inProgress: inProgress.length,
+                transferred: transferred.length
             };
         }
 
@@ -1211,6 +1229,7 @@
             pickedUpCount.textContent = String(totals.pickedUp);
             mitigatedCount.textContent = String(totals.mitigated);
             inProgressCount.textContent = String(totals.inProgress);
+            transferredCount.textContent = String(totals.transferred);
             totalsSection.classList.remove("hidden");
         }
 
@@ -1258,10 +1277,12 @@
                 const id = String(row[cols.id] || "").trim();
                 if (!id) return null;
                 const mitigatedText = String(row[cols.mitigated] || "").trim();
+                const transferText = cols.transferred >= 0 ? String(row[cols.transferred] || "").trim() : "";
                 return {
                     id: id,
                     pickedUpMs: parseExcelDateIST(row[cols.pickedUp]),
-                    mitigatedMs: mitigatedText ? parseExcelDateIST(mitigatedText) : null
+                    mitigatedMs: mitigatedText ? parseExcelDateIST(mitigatedText) : null,
+                    transferMs: transferText ? parseExcelDateIST(transferText) : null
                 };
             }).filter(Boolean);
 
